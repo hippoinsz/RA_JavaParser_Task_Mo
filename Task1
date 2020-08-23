@@ -1,0 +1,74 @@
+package TaskSolution;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
+
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy;
+import com.github.javaparser.utils.ProjectRoot;
+import com.github.javaparser.utils.SourceRoot;
+
+public class Task1 {
+
+	private CombinedTypeSolver combinedSolver = new CombinedTypeSolver();
+	private static String src_dir = "/Users/fubinmo/git/avro/lang/java/";
+	private static String jar_dir = null;
+	private static String[] filePaths = {"/Users/fubinmo/git/avro/lang/java/avro/src/test/java/org/apache/avro/io/parsing/TestResolvingGrammarGenerator.java",
+			"/Users/fubinmo/git/avro/lang/java/avro/src/test/java/org/apache/avro/TestDataFileMeta.java",
+			"/Users/fubinmo/git/avro/lang/java/ipc/src/test/java/org/apache/avro/TestProtocolGeneric.java"
+	};
+
+	private void initCombinedSolver() throws IOException {
+		CombinedTypeSolver combinedSolver = new CombinedTypeSolver();
+		TypeSolver reflectionTypeSolver = new ReflectionTypeSolver();
+
+		File file = new File(src_dir);
+		// get src root
+		final ProjectRoot projectRoot = new SymbolSolverCollectionStrategy().collect(file.toPath());
+		List<SourceRoot> sourceRootList = projectRoot.getSourceRoots();
+		// add java jre solver
+		combinedSolver.add(reflectionTypeSolver);
+		// add src roots into combined solver
+		for (SourceRoot sourceRoot : sourceRootList) {
+			combinedSolver.add(new JavaParserTypeSolver(sourceRoot.getRoot()));
+		}
+		// add jar solver
+		if (jar_dir != null) {
+			for (File jar_File : new File(jar_dir).listFiles()) {
+				combinedSolver.add(new JarTypeSolver(jar_File));
+			}
+		}
+		this.combinedSolver = combinedSolver;
+	}
+
+	public static void main(String[] args) throws FileNotFoundException {
+
+		Task1 task = new Task1();
+
+		try {
+			task.initCombinedSolver();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		StaticJavaParser.getConfiguration().setSymbolResolver(new JavaSymbolSolver(task.combinedSolver));
+		for (String path : filePaths) {
+			System.out.println("***************************");
+			System.out.println("This is the " + path.substring(path.lastIndexOf("/")+1) + " Class");
+			CompilationUnit cu = StaticJavaParser.parse(new File(path));
+			MethodCallExpressionVisitor rv = new MethodCallExpressionVisitor();
+			cu.accept(rv, null);
+		}
+
+	}
+
+}
