@@ -25,6 +25,22 @@ public class Task1 {
 			"/Users/fubinmo/git/avro/lang/java/avro/src/test/java/org/apache/avro/TestDataFileMeta.java",
 			"/Users/fubinmo/git/avro/lang/java/ipc/src/test/java/org/apache/avro/TestProtocolGeneric.java"
 	};
+	
+	private static class MethodCallExpressionVisitor extends VoidVisitorAdapter<Void> {
+
+		@Override
+		public void visit(MethodCallExpr mce, Void arg) {
+
+			System.out.println("======================");
+		    System.out.println("Method Call Expression: \n" + mce);
+		    try {
+		      mce.resolve();
+		    } catch (Exception e) {
+		      System.err.println(e);
+		    }
+
+		}
+	}
 
 	private void initCombinedSolver() throws IOException {
 		CombinedTypeSolver combinedSolver = new CombinedTypeSolver();
