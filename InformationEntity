@@ -1,0 +1,40 @@
+package TaskSolution;
+
+import java.util.List;
+
+import com.github.javaparser.ast.body.MethodDeclaration;
+
+public class InformationEntity {
+	
+	public List<MethodDeclaration> methodDeclarations;
+	
+	public String classQualifiedName;
+	
+	public List<String> methodQulifiedName;
+
+	public String getClassQualifiedName() {
+		return classQualifiedName;
+	}
+
+	public void setClassQualifiedName(String classQualifiedName) {
+		this.classQualifiedName = classQualifiedName;
+	}
+
+	public List<MethodDeclaration> getMethodDeclarations() {
+		return methodDeclarations;
+	}
+
+	public void setMethodDeclarations(List<MethodDeclaration> methodDeclarations) {
+		this.methodDeclarations = methodDeclarations;
+	}
+
+	public List<String> getMethodQulifiedName() {
+		return methodQulifiedName;
+	}
+
+	public void setMethodQulifiedName(List<String> methodQulifiedName) {
+		this.methodQulifiedName = methodQulifiedName;
+	}
+
+	
+}
