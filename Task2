@@ -22,34 +22,76 @@ import com.github.javaparser.utils.SourceRoot;
 
 public class Task2 {
 
+	private static String getFullyQualifiedName(ClassOrInterfaceDeclaration c2) {
+		String name = "";
+		ClassOrInterfaceDeclaration parentClass = c2.getParentNode().isPresent() ? getClass(c2.getParentNode().get())
+				: null;
+		if (parentClass != null) {
+			name += getFullyQualifiedName(parentClass) + ".";
+		} else {
+			CompilationUnit u = getCompilationUnit(c2);
+			if (u != null && u.getPackageDeclaration().isPresent()) {
+				name += u.getPackageDeclaration().get().getNameAsString() + ".";
+			}
+		}
+		return name + c2.getNameAsString();
+	}
+
+	private static ClassOrInterfaceDeclaration getClass(Node n1) {
+		while (!(n1 instanceof ClassOrInterfaceDeclaration)) {
+			if (n1.getParentNode().isPresent()) {
+				n1 = n1.getParentNode().get();
+			} else
+				return null;
+		}
+		return (ClassOrInterfaceDeclaration) n1;
+	}
+
+	private static CompilationUnit getCompilationUnit(Node n1) {
+		while (!(n1 instanceof CompilationUnit)) {
+			if (n1.getParentNode().isPresent()) {
+				n1 = n1.getParentNode().get();
+			} else
+				return null;
+		}
+		return (CompilationUnit) n1;
+	}
+
 	private static String src_dir = "/Users/fubinmo/git/avro/lang/java/";
 	private static String jar_dir = null;
 	// "/Users/fubinmo/git/avro/lang/java/avro/src/test/java/org/apache/avro/TestDataFileMeta.java",
 	// "/Users/fubinmo/git/avro/lang/java/ipc/src/test/java/org/apache/avro/TestProtocolGeneric.java"
 	// "/Users/fubinmo/git/avro/lang/java/avro/src/test/java/org/apache/avro/io/parsing/TestResolvingGrammarGenerator.java",
 	private static String[] filePaths = {
-			"/Users/fubinmo/git/avro/lang/java/avro/src/test/java/org/apache/avro/io/parsing/TestResolvingGrammarGenerator.java",
+			"/Users/fubinmo/git/avro/lang/java/ipc/src/test/java/org/apache/avro/TestProtocolGeneric.java",
 			"/Users/fubinmo/git/avro/lang/java/avro/src/test/java/org/apache/avro/TestDataFileMeta.java",
-			"/Users/fubinmo/git/avro/lang/java/ipc/src/test/java/org/apache/avro/TestProtocolGeneric.java" };
+			"/Users/fubinmo/git/avro/lang/java/avro/src/test/java/org/apache/avro/io/parsing/TestResolvingGrammarGenerator.java"};
 
 	private static class MethodCallExpressionVisitor extends VoidVisitorAdapter<Void> {
 
-		public InformationEntity ie;
+		public InformationEntity ie = new InformationEntity();
+		public List<String> qulifiedName;
 
 		@Override
 		public void visit(ClassOrInterfaceDeclaration cd, Void arg) {
 
 			List<MethodDeclaration> mdList = new ArrayList<MethodDeclaration>();
+			qulifiedName = new ArrayList<String>();
+			
+			String classQualifiedName = getFullyQualifiedName(cd);
 
 			for (MethodDeclaration md : cd.getMethods()) {
 				for (Node annotation : md.getAnnotations()) {
 					if (annotation.toString().contains("@Test")) {
 						mdList.add(md);
+						qulifiedName.add(classQualifiedName + "." + md.getNameAsString());
 					}
 				}
 			}
-
-			ie = new InformationEntity(mdList);
+			
+			ie.setMethodDeclarations(mdList);
+			ie.setClassQualifiedName(classQualifiedName);
+			ie.setMethodQulifiedName(qulifiedName);
 
 		}
 
@@ -91,9 +133,10 @@ public class Task2 {
 				MethodCallExpressionVisitor rv = new MethodCallExpressionVisitor();
 				cu.accept(rv, null);
 
-				for (MethodDeclaration md : rv.ie.methodDeclarations) {
-					System.out.println(md.toString());
+				for (String mqn : rv.ie.methodQulifiedName) {
+					System.out.println(mqn);
 				}
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
