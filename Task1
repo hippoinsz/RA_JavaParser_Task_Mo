@@ -1,7 +1,6 @@
 package TaskSolution;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -65,9 +64,11 @@ public class Task1 {
 				MethodCallExpressionVisitor rv = new MethodCallExpressionVisitor();
 				cu.accept(rv, null);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		
 
 	}
 
