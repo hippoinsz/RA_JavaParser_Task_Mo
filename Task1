@@ -50,23 +50,23 @@ public class Task1 {
 		this.combinedSolver = combinedSolver;
 	}
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args){
 
 		Task1 task = new Task1();
 
 		try {
 			task.initCombinedSolver();
+			
+			StaticJavaParser.getConfiguration().setSymbolResolver(new JavaSymbolSolver(task.combinedSolver));
+			for (String path : filePaths) {
+				System.out.println("***************************");
+				System.out.println("This is the " + path.substring(path.lastIndexOf("/")+1) + " Class");
+				CompilationUnit cu = StaticJavaParser.parse(new File(path));
+				MethodCallExpressionVisitor rv = new MethodCallExpressionVisitor();
+				cu.accept(rv, null);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-
-		StaticJavaParser.getConfiguration().setSymbolResolver(new JavaSymbolSolver(task.combinedSolver));
-		for (String path : filePaths) {
-			System.out.println("***************************");
-			System.out.println("This is the " + path.substring(path.lastIndexOf("/")+1) + " Class");
-			CompilationUnit cu = StaticJavaParser.parse(new File(path));
-			MethodCallExpressionVisitor rv = new MethodCallExpressionVisitor();
-			cu.accept(rv, null);
 		}
 
 	}
